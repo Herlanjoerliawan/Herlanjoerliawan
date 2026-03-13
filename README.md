@@ -1,16 +1,27 @@
-## Hi there 👋
+# LANLAN STORE
 
-<!--
-**LanlanXD/LanlanXD** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Website toko tema cyber responsif dengan dashboard admin lengkap:
+- Setting isi website (nama toko, logo, banner, background)
+- Manajemen kategori & produk (tambah/edit harga/hapus)
+- Checkout dengan metode manual, saldo, dan simulasi Pakasir
+- Integrasi API Pakasir + Pterodactyl (Panel URL, API key, nest/egg/node)
+- Produk Pterodactyl + input server info saat checkout
+- Konfirmasi pembayaran dan otomasi pembuatan server (simulasi)
+- Kelola deposit/saldo user
+- Sinkronisasi real-time via Server-Sent Events
 
-Here are some ideas to get you started:
+## Jalankan
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+```bash
+npm install
+npm start
+```
+
+Buka:
+- Frontend: `http://localhost:3000`
+- Admin: `http://localhost:3000/admin.html`
+
+## Storage
+
+Default pakai `data/store.json`.
+Jika `MYSQL_URL` tersedia, state disimpan ke MySQL table `app_state`.

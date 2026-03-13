@@ -1,0 +1,89 @@
+{
+  "settings": {
+    "storeName": "LANLAN STORE",
+    "logo": "https://files.catbox.moe/7xovkb.jpg",
+    "bannerTitle": "Top Up Cepat, Cyber Style",
+    "bannerSubtitle": "Voucher, Pulsa, dan Panel Pterodactyl otomatis.",
+    "backgroundImage": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80",
+    "manualPayments": [
+      {
+        "id": "mp-1",
+        "label": "Transfer Bank BCA",
+        "detail": "1234567890 a.n LANLAN STORE"
+      }
+    ],
+    "apiKeys": {
+      "pakasir": {
+        "apiKey": "",
+        "merchantId": "",
+        "slug": ""
+      },
+      "pterodactyl": {
+        "panelUrl": "",
+        "applicationApiKey": "",
+        "accountApiKey": "",
+        "nodeId": "",
+        "nestId": "",
+        "eggId": ""
+      }
+    }
+  },
+  "categories": [
+    {
+      "id": "cat-voucher",
+      "name": "Voucher"
+    },
+    {
+      "id": "cat-ptero",
+      "name": "Pterodactyl"
+    }
+  ],
+  "products": [
+    {
+      "id": "urfpqr2e",
+      "name": "Panel 2GB",
+      "price": 15000,
+      "categoryId": "cat-ptero",
+      "ram": "2GB",
+      "cpu": "120%",
+      "disk": "10GB"
+    }
+  ],
+  "users": [
+    {
+      "id": "admin",
+      "name": "Administrator",
+      "balance": 0
+    },
+    {
+      "id": "u-guest",
+      "name": "u-guest",
+      "balance": 0
+    }
+  ],
+  "orders": [
+    {
+      "id": "k853hzqf",
+      "userId": "u-guest",
+      "userName": "u-guest",
+      "productId": "urfpqr2e",
+      "productName": "Panel 2GB",
+      "productSpec": {
+        "ram": "2GB",
+        "cpu": "120%",
+        "disk": "10GB"
+      },
+      "paymentMethod": "manual",
+      "paymentInstruction": "BCA",
+      "serverInfo": {
+        "username": "userpanel",
+        "password": "secret"
+      },
+      "amount": 15000,
+      "status": "pending",
+      "paymentMeta": {},
+      "automationLog": "Pending payment confirmation",
+      "createdAt": "2026-03-13T12:31:07.134Z"
+    }
+  ]
+}
