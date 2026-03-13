@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset='utf-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>LANLAN STORE</title><link rel='stylesheet' href='/styles.css'/></head>
+<body><div class='container'>
+<div class='nav'><h2 id='storeName'>LANLAN STORE</h2><div class='pill'>User: <span id='uid'>u-guest</span> | Saldo Rp <span id='balance'>0</span></div></div>
+<section class='hero'><div><h1 id='bannerTitle'></h1><p id='bannerSubtitle'></p><a href='/admin.html' class='pill'>Admin Dashboard</a></div><img id='logo' class='logo'/></section>
+<h3>Katalog Produk</h3><div id='products' class='grid'></div>
+<h3>Checkout</h3><div class='card'>
+<div class='row'><select id='productSelect'></select><select id='paymentMethod'></select></div>
+<div id='manualWrap' style='display:none;margin:10px 0'><select id='manualInstruction'></select></div>
+<div id='serverFields' class='row' style='display:none;margin:10px 0'><input id='serverUsername' placeholder='Username panel'/><input id='serverPassword' placeholder='Password panel'/></div>
+<button id='checkoutBtn'>Buat Pesanan</button><pre id='result'></pre>
+</div></div>
+<script>
+let state={}; let currentUser='u-guest';
+async function api(url,opt={}){const r=await fetch(url,{headers:{'Content-Type':'application/json'},...opt});return r.json()}
+function money(v){return Number(v||0).toLocaleString('id-ID')}
+function render(){
+ document.body.style.setProperty('--hero-bg',`url(${state.settings.backgroundImage})`);
+ storeName.textContent=state.settings.storeName;bannerTitle.textContent=state.settings.bannerTitle;bannerSubtitle.textContent=state.settings.bannerSubtitle;logo.src=state.settings.logo;document.title=state.settings.storeName;
+ const user=state.users.find(u=>u.id===currentUser)||{balance:0};uid.textContent=currentUser;balance.textContent=money(user.balance);
+ products.innerHTML=state.products.map(p=>`<div class='card'><div class='badge'>${p.category||'-'}</div><h4>${p.name}</h4><p>Rp ${money(p.price)}</p><div class='spec'>${p.ram||'-'} RAM • ${p.cpu||'-'} CPU • ${p.disk||'-'} Disk</div></div>`).join('');
+ productSelect.innerHTML=state.products.map(p=>`<option value='${p.id}'>${p.name} - Rp ${money(p.price)}</option>`).join('');
+ paymentMethod.innerHTML=["manual","pakasir","balance"].map(m=>`<option value='${m}'>${m}</option>`).join('');
+ manualInstruction.innerHTML=(state.settings.manualPayments||[]).map(m=>`<option value='${m.detail}'>${m.label} - ${m.detail}</option>`).join('');
+ handleDynamic();
+}
+function handleDynamic(){const p=state.products.find(x=>x.id===productSelect.value);serverFields.style.display=(p&&String(p.category).toLowerCase()==='pterodactyl')?'grid':'none';manualWrap.style.display=paymentMethod.value==='manual'?'block':'none';}
+checkoutBtn.onclick=async()=>{const body={userId:currentUser,productId:productSelect.value,paymentMethod:paymentMethod.value,paymentInstruction:manualInstruction.value,serverInfo:{username:serverUsername.value,password:serverPassword.value}};const out=await api('/api/orders',{method:'POST',body:JSON.stringify(body)});result.textContent=JSON.stringify(out,null,2)}
+productSelect.onchange=handleDynamic;paymentMethod.onchange=handleDynamic;
+async function boot(){state=await api('/api/state');render();const es=new EventSource('/api/stream');es.onmessage=async()=>{state=await api('/api/state');render();}}boot();
+</script></body></html>

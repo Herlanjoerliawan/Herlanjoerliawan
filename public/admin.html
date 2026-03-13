@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset='utf-8'/><meta name='viewport' content='width=device-width,initial-scale=1'/><title>Admin LANLAN</title><link rel='stylesheet' href='/styles.css'/></head>
+<body><div class='container'>
+<h2>Dashboard Admin</h2>
+<div class='admin-layout'>
+<aside class='side' id='tabs'></aside>
+<main id='panel'></main>
+</div></div>
+<script>
+const tabs=['ringkasan','pesanan','produk','kategori','pengaturan','pembayaran-manual','integrasi-api','deposit-user'];
+let active='ringkasan',state={};
+const api=(u,o={})=>fetch(u,{headers:{'Content-Type':'application/json'},...o}).then(r=>r.json());
+function money(v){return Number(v||0).toLocaleString('id-ID')}
+function tabUI(){tabsEl= document.getElementById('tabs');tabsEl.innerHTML=tabs.map(t=>`<div class='tab ${active===t?'active':''}' onclick="setTab('${t}')">${t}</div>`).join('')}
+window.setTab=(t)=>{active=t;render()}
+
+function summary(){const total=state.orders.length;const rev=state.orders.filter(o=>o.status==='completed').reduce((a,b)=>a+b.amount,0);return `<div class='grid'><div class='card'><h4>Total Pesanan</h4><h2>${total}</h2></div><div class='card'><h4>Pendapatan</h4><h2>Rp ${money(rev)}</h2></div><div class='card'><h4>User</h4><h2>${state.users.length}</h2></div></div>`}
+function orders(){return `<div class='card'><table class='table'><tr><th>ID</th><th>Produk</th><th>Metode</th><th>Status</th><th>Server Info</th><th>Automation</th><th>Aksi</th></tr>${state.orders.map(o=>`<tr><td>${o.id.slice(0,6)}</td><td>${o.productName}</td><td>${o.paymentMethod}</td><td>${o.status}</td><td>${o.serverInfo?.username||'-'}</td><td>${o.automationLog||'-'}</td><td><button onclick="confirmOrder('${o.id}')">✅</button></td></tr>`).join('')}</table></div>`}
+function products(){return `<div class='card'><h4>Tambah Produk</h4><div class='row'><input id='pname' placeholder='Nama'/><input id='pprice' type='number' placeholder='Harga'/></div><div class='row'><select id='pcat'>${state.categories.map(c=>`<option value='${c.id}'>${c.name}</option>`)}</select><input id='pram' placeholder='RAM (opsional)'/></div><div class='row'><input id='pcpu' placeholder='CPU'/><input id='pdisk' placeholder='Disk'/></div><button onclick='addProduct()'>Tambah</button></div>
+<div class='card'><h4>Kelola Produk</h4><table class='table'><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr>${state.products.map(p=>`<tr><td>${p.name}</td><td>${p.category||'-'}</td><td><input type='number' value='${p.price}' onchange="updatePrice('${p.id}',this.value)"/></td><td><button onclick="delProduct('${p.id}')">🗑️</button></td></tr>`).join('')}</table></div>`}
+function categories(){return `<div class='card'><div class='row'><input id='cname' placeholder='Kategori baru'/><button onclick='addCategory()'>Tambah</button></div><table class='table'><tr><th>Nama</th><th>Aksi</th></tr>${state.categories.map(c=>`<tr><td><input value='${c.name}' onchange="editCategory('${c.id}',this.value)"/></td><td><button onclick="delCategory('${c.id}')">hapus</button></td></tr>`).join('')}</table></div>`}
+function settings(){const s=state.settings;return `<div class='card'><h4>Pengaturan Toko</h4><div class='row'><input id='sname' value='${s.storeName}'/><input id='slogo' value='${s.logo}'/></div><div class='row'><input id='stitle' value='${s.bannerTitle}'/><input id='ssub' value='${s.bannerSubtitle}'/></div><input id='sbg' value='${s.backgroundImage}' placeholder='URL Background'/><button onclick='saveSettings()'>Simpan</button></div>`}
+function manual(){const list=state.settings.manualPayments||[];return `<div class='card'><h4>Metode Pembayaran Manual</h4><div class='row'><input id='mlabel' placeholder='Label'/><input id='mdetail' placeholder='Detail'/></div><button onclick='addManual()'>Tambah Metode</button><table class='table'>${list.map(m=>`<tr><td>${m.label}</td><td>${m.detail}</td><td><button onclick="removeManual('${m.id}')">x</button></td></tr>`).join('')}</table></div>`}
+function integration(){const p=state.settings.apiKeys.pakasir||{},t=state.settings.apiKeys.pterodactyl||{};return `<div class='card'><h4>Integrasi API</h4><h5>Pakasir</h5><div class='row'><input type='password' id='pk' value='${p.apiKey||''}' placeholder='API key'/><input id='pm' value='${p.merchantId||''}' placeholder='Merchant ID'/></div><input id='ps' value='${p.slug||''}' placeholder='Slug'/><h5>Pterodactyl</h5><input id='tu' value='${t.panelUrl||''}' placeholder='Panel URL'/><div class='row'><input type='password' id='ta' value='${t.applicationApiKey||''}' placeholder='Application API Key'/><input type='password' id='tc' value='${t.accountApiKey||''}' placeholder='Account API Key'/></div><div class='row'><input id='tn' value='${t.nodeId||''}' placeholder='Node ID'/><input id='tne' value='${t.nestId||''}' placeholder='Nest ID'/></div><input id='te' value='${t.eggId||''}' placeholder='Egg ID'/><button onclick='saveIntegrations()'>Simpan Integrasi</button></div>`}
+function deposit(){return `<div class='card'><h4>Kelola Deposit User</h4><div class='row'><input id='uid' placeholder='User ID'/><input id='uamount' type='number' placeholder='Nominal (+/-)'/></div><button onclick='deposit()'>Update Saldo</button><table class='table'><tr><th>ID</th><th>Nama</th><th>Saldo</th></tr>${state.users.map(u=>`<tr><td>${u.id}</td><td>${u.name}</td><td>Rp ${money(u.balance)}</td></tr>`).join('')}</table></div>`}
+
+async function render(){tabUI();const panel=document.getElementById('panel');panel.innerHTML={ringkasan:summary,pesanan:orders,produk:products,kategori:categories,pengaturan:settings,'pembayaran-manual':manual,'integrasi-api':integration,'deposit-user':deposit}[active]();}
+window.confirmOrder=async(id)=>{await api('/api/orders/'+id+'/confirm',{method:'POST'});boot()}
+window.addProduct=async()=>{await api('/api/products',{method:'POST',body:JSON.stringify({name:pname.value,price:+pprice.value,categoryId:pcat.value,ram:pram.value,cpu:pcpu.value,disk:pdisk.value})});boot()}
+window.delProduct=async(id)=>{await api('/api/products/'+id,{method:'DELETE'});boot()}
+window.updatePrice=async(id,price)=>{await api('/api/products/'+id,{method:'PUT',body:JSON.stringify({price:+price})})}
+window.addCategory=async()=>{await api('/api/categories',{method:'POST',body:JSON.stringify({name:cname.value})});boot()}
+window.editCategory=async(id,name)=>{await api('/api/categories/'+id,{method:'PUT',body:JSON.stringify({name})})}
+window.delCategory=async(id)=>{await api('/api/categories/'+id,{method:'DELETE'});boot()}
+window.saveSettings=async()=>{await api('/api/settings',{method:'PUT',body:JSON.stringify({storeName:sname.value,logo:slogo.value,bannerTitle:stitle.value,bannerSubtitle:ssub.value,backgroundImage:sbg.value})});boot()}
+window.addManual=async()=>{const manual=[...(state.settings.manualPayments||[]),{id:Math.random().toString(36).slice(2),label:mlabel.value,detail:mdetail.value}];await api('/api/settings',{method:'PUT',body:JSON.stringify({manualPayments:manual})});boot()}
+window.removeManual=async(id)=>{const manual=(state.settings.manualPayments||[]).filter(m=>m.id!==id);await api('/api/settings',{method:'PUT',body:JSON.stringify({manualPayments:manual})});boot()}
+window.saveIntegrations=async()=>{await api('/api/settings',{method:'PUT',body:JSON.stringify({apiKeys:{pakasir:{apiKey:pk.value,merchantId:pm.value,slug:ps.value},pterodactyl:{panelUrl:tu.value,applicationApiKey:ta.value,accountApiKey:tc.value,nodeId:tn.value,nestId:tne.value,eggId:te.value}}})});boot()}
+window.deposit=async()=>{await api('/api/users/'+document.getElementById('uid').value+'/deposit',{method:'POST',body:JSON.stringify({amount:+uamount.value})});boot()}
+async function boot(){state=await api('/api/state');render();}
+boot();new EventSource('/api/stream').onmessage=boot;
+</script></body></html>
